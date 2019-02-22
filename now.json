@@ -1,0 +1,14 @@
+{
+    "name": "logisticspro",
+    "version":2,
+    "public": true,
+    "alias": ["logisticsprodata.com"],
+    "github": {
+        "autoAlias": false,
+        "enabled": false
+      },
+      "builds": [{ "src": "*.js", "use": "@now/node-server" }],
+      "routes": [
+        { "src": "/.*", "dest": "index.js" }
+    ]
+}
