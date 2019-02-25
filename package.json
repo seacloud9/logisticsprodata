@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "debug": "DEBUG=express:* node index.js",
+    "push": "npx apollo service:push --endpoint=https://logisticsprodata.now.sh/graphql --key=\"service:seacloud9-7789:KmMExeFQ0AEr9P4pAuIveQ\"",
+    "publish": "npx apollo schema:publish --endpoint=https://logisticsprodata.now.sh/graphql --key=\"service:seacloud9-7789:KmMExeFQ0AEr9P4pAuIveQ\"",
     "deploy": "now -e ENGINE_API_KEY=service:seacloud9-7789:KmMExeFQ0AEr9P4pAuIveQ -e NODE_ENV=production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,6 +18,7 @@
     "apollo-server-express": "^2.3.1",
     "express": "^4.16.4",
     "graphql": "^0.13.2",
+    "lodash": "^4.17.11",
     "moment": "^2.24.0"
   }
 }
