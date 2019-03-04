@@ -47,11 +47,7 @@ type Query {
 
   # this schema allows the following mutation:
 type Mutation {
-    JobQue (
-      dateKey: String
-      jobID: String
-      truckID: String
-    ): JobQue
+    JobQue:JobQue
     Job (
       name: String!
       dateOfMove: String!
@@ -66,37 +62,32 @@ type Mutation {
 }
   `;
 
-const checkTruck = function(truck, job, date, jobQueID) {
-    const currentTruck = Trucks.length ? lo.find(Trucks, {
-        id: truck
-    }):null
-    const currentJob = Jobs.length ? lo.find(Jobs, {
-        id: job
-    }):null 
-    const currentJobQue = JobsQued.length ? lo.find(JobsQued, {
-        id: jobQueID,
-        date: date
-    }):null 
-
-    const currentDayTruckUsage = JobsQued.length ? lo.find(JobsQued, {
-        id: jobQueID,
-        truck: truck.id
-    }):null
-    if (!currentTruck) {
-        throw new Error(`Couldn't find the current ${truckId}`);
-    }
-    if (currentDayTruckUsage) {
+const createJobQue = function() {
+    // get the last job we just made
+    const currentJob = Jobs[Jobs.length - 1]    
+    var currentTruck
+    for(let i=0; i < Trucks.length; i++){
         let allofTruckCurrenHours = 0
-        currentDayTruckUsage.map((value, index) => {
-            allofTruckCurrenHours += value.estimatedTime
-        })
-        if (0 > (allofTruckCurrenHours - currentTruck.totalHours)) {
-            throw new Error(`Current truck ${truck.name} is unavailable`);
+        // check all jobs on that date to get allofTruckCurrenHours
+        if(JobsQued.length){
+            JobsQued.map((value, index) => {
+                if(value.date === currentJob.dateOfMove && value.truckID === Trucks[i].id){
+                    allofTruckCurrenHours = value.estimatedTime
+                }
+            })
         }
+        if (0 > (Trucks[i].totalHours - allofTruckCurrenHours)) {
+            // truck is full
+            break;
+        }else{
+            currentTruck = Trucks[i]
+            continue;
+        }
+        
     }
     const _job = {
-        id: jobQueID,
-        date: date,
+        id: getUniqueID(),
+        date: currentJob.dateOfMove,
         jobName: currentJob.name,
         jobID: currentJob.id,
         estimatedTime: currentJob.estimatedTime,
@@ -118,25 +109,7 @@ const resolvers = {
         Trucks: () => Trucks,
     },
     Mutation: {
-        JobQue: (_, {
-            dateKey,
-            jobID,
-            truckID
-        }) => {
-            const jobQue = JobsQued.length ? lo.find(JobsQued, {
-                date: dateKey
-            }):null
-            if (!jobQue) {
-                const currenJob = lo.find(Jobs, {
-                    'id': jobID
-                })
-                return checkTruck(truckID, jobID, moment(currenJob.dateOfMove).format('MM-DD-YYYY'), getUniqueID())
-            } else {
-                jobQue.map((value, index) => {
-                    return checkTruck(truckID, jobID, value.date, value.id)
-                })
-            }
-        },
+        JobQue: (_, {}) => createJobQue(),
         Job: (_, {
             name,
             dateOfMove,
